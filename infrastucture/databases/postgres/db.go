@@ -1,42 +1,47 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 
-	_ "github.com/lib/pq"
+	"github.com/VicOsewe/Order-service/domain"
+	"gorm.io/driver/postgres"
+
+	"gorm.io/gorm"
 )
 
-func SetUpDB() error {
+type OrderService struct {
+	DB *gorm.DB
+}
 
-	por := getEnv("DBPORT")
+func New(db *gorm.DB) OrderService {
+	return OrderService{db}
+}
+
+func InitializeDatabase() (*gorm.DB, error) {
 	password := getEnv("DBPASSWORD")
 	user := getEnv("DBUSER")
 	dbname := getEnv("DBNAME")
 	host := getEnv("DBHOST")
-	port, err := strconv.Atoi(por)
+	port, err := strconv.Atoi(getEnv("DBPORT"))
 	if err != nil {
-		return fmt.Errorf("failed to get port with error: %v", err)
+		return nil, fmt.Errorf("failed to get port with error: %v", err)
 	}
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return fmt.Errorf("failed to open database:%v", err)
+		log.Fatal(err)
 	}
-	defer db.Close()
+	log.Print("connected to the database successfully")
 
-	err = db.Ping()
-	if err != nil {
-		return fmt.Errorf("failed to establish a connection to the database:%v", err)
-	}
-	return nil
+	db.AutoMigrate(&domain.Customer{})
+	return db, nil
 
 }
 

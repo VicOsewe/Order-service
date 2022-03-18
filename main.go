@@ -17,8 +17,7 @@ func main() {
 func SetUpRouter() {
 	router := mux.NewRouter()
 
-	//connect to db
-	err := postgres.SetUpDB()
+	_, err := postgres.InitializeDatabase()
 	if err != nil {
 		log.Printf("failed to connect to database :%v", err)
 		os.Exit(1)
