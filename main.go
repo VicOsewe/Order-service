@@ -10,11 +10,13 @@ import (
 )
 
 func main() {
+	SetUpRouter()
 
 }
 
 func SetUpRouter() {
 	router := mux.NewRouter()
+
 	//connect to db
 	err := postgres.SetUpDB()
 	if err != nil {

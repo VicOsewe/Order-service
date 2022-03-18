@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 func SetUpDB() error {
@@ -28,7 +30,6 @@ func SetUpDB() error {
 	if err != nil {
 		return fmt.Errorf("failed to open database:%v", err)
 	}
-
 	defer db.Close()
 
 	err = db.Ping()
