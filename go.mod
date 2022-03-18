@@ -3,8 +3,14 @@ module github.com/VicOsewe/Order-service
 go 1.17
 
 require (
-	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.8.0
+	gorm.io/driver/postgres v1.3.1
+	gorm.io/gorm v1.23.3
+)
+
+require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -18,6 +24,4 @@ require (
 	github.com/lib/pq v1.10.4 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gorm.io/driver/postgres v1.3.1 // indirect
-	gorm.io/gorm v1.23.3 // indirect
 )

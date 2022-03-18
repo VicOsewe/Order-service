@@ -3,9 +3,8 @@ package postgres
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 
+	"github.com/VicOsewe/Order-service/application"
 	"github.com/VicOsewe/Order-service/domain"
 	"gorm.io/driver/postgres"
 
@@ -20,17 +19,21 @@ func New(db *gorm.DB) OrderService {
 	return OrderService{db}
 }
 
-func InitializeDatabase() (*gorm.DB, error) {
-	password := getEnv("DBPASSWORD")
-	user := getEnv("DBUSER")
-	dbname := getEnv("DBNAME")
-	host := getEnv("DBHOST")
-	port, err := strconv.Atoi(getEnv("DBPORT"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get port with error: %v", err)
+func NewOrderService() *OrderService {
+	m := OrderService{
+		DB: InitializeDatabase(),
 	}
+	return &m
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
+}
+func InitializeDatabase() *gorm.DB {
+	password := application.GetEnv("DBPASSWORD")
+	user := application.GetEnv("DBUSER")
+	dbname := application.GetEnv("DBNAME")
+	host := application.GetEnv("DBHOST")
+	port := application.GetEnv("DBPORT")
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
@@ -41,17 +44,18 @@ func InitializeDatabase() (*gorm.DB, error) {
 	log.Print("connected to the database successfully")
 
 	db.AutoMigrate(&domain.Customer{})
-	return db, nil
+	return db
 
 }
 
-func getEnv(envName string) string {
-	envVar := os.Getenv(envName)
-	if envVar == "" {
-		msg := fmt.Sprintf("environment variable %s not found", envName)
-		log.Panicf(msg)
-		os.Exit(1)
+//CreateCustomer creates a record of a customer in the database
+func (db *OrderService) CreateCustomer(customer *domain.Customer) (*domain.Customer, error) {
+	customer.ID = application.NewUUID()
+	if err := db.DB.Create(customer).Error; err != nil {
+		return nil, fmt.Errorf(
+			"can't create a new marketing record: err: %v",
+			err,
+		)
 	}
-
-	return envVar
+	return customer, nil
 }
