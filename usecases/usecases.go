@@ -3,6 +3,7 @@ package usecases
 import (
 	"fmt"
 
+	"github.com/VicOsewe/Order-service/application/interfaces"
 	"github.com/VicOsewe/Order-service/domain"
 	"github.com/VicOsewe/Order-service/repository"
 )
@@ -19,11 +20,13 @@ type OrderService interface {
 
 type Service struct {
 	Repository repository.Repository
+	SMS        interfaces.SMS
 }
 
-func NewOrderService(repo repository.Repository) *Service {
+func NewOrderService(repo repository.Repository, sms interfaces.SMS) *Service {
 	return &Service{
 		Repository: repo,
+		SMS:        sms,
 	}
 }
 
@@ -88,6 +91,11 @@ func (s *Service) CreateOrder(order *domain.Order, orderProducts *[]domain.Order
 	ord, err := s.Repository.CreateOrder(order, orderProducts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create an order :%v", err)
+	}
+	message := fmt.Sprintf("Dear customer you order has been created with an order id of %v, our team will contact you shortly to finalize it", ord.ID)
+	err = s.SMS.SendSMS(message, customer.PhoneNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send sms to customer with an error of %v", err)
 	}
 
 	return &ord.ID, nil
