@@ -43,7 +43,7 @@ func InitializeDatabase() *gorm.DB {
 	}
 	log.Print("connected to the database successfully")
 
-	db.AutoMigrate(&domain.Customer{})
+	db.AutoMigrate(&domain.Customer{}, &domain.Order{}, &domain.Product{}, &domain.OrderProduct{})
 	return db
 
 }
@@ -53,9 +53,47 @@ func (db *OrderService) CreateCustomer(customer *domain.Customer) (*domain.Custo
 	customer.ID = application.NewUUID()
 	if err := db.DB.Create(customer).Error; err != nil {
 		return nil, fmt.Errorf(
-			"can't create a new marketing record: err: %v",
+			"can't create customer record: err: %v",
 			err,
 		)
 	}
 	return customer, nil
+}
+
+//CreateProduct creates a record of a product in the database
+func (db *OrderService) CreateProduct(product *domain.Product) (*domain.Product, error) {
+	product.ID = application.NewUUID()
+	if err := db.DB.Create(product).Error; err != nil {
+		return nil, fmt.Errorf(
+			"can't create a product record: err: %v",
+			err,
+		)
+	}
+
+	return product, nil
+}
+
+//CreateOrder creates a record of an order int he database
+func (db *OrderService) CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*domain.Order, error) {
+	order.ID = application.NewUUID()
+	err := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+
+		for _, orderProduct := range *orderProducts {
+			orderProduct.ID = application.NewUUID()
+			orderProduct.OrderID = order.ID
+			if err := tx.Create(&orderProduct).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return order, nil
 }

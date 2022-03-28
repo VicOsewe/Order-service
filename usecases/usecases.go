@@ -34,3 +34,4 @@ func (s *Service) CreateCustomer(customer *domain.Customer) (*domain.Customer, e
 
 	return cust, nil
 }
+
