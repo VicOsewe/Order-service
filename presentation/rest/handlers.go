@@ -10,6 +10,8 @@ import (
 
 type HandlersInterfaces interface {
 	CreateCustomer(w http.ResponseWriter, r *http.Request)
+	CreateProduct(w http.ResponseWriter, r *http.Request)
+	CreateOrder(w http.ResponseWriter, r *http.Request)
 }
 
 type HandlersImplementation struct {
@@ -80,6 +82,95 @@ func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.R
 	response := dto.APIResponse{
 		Message:    "customer created successfully",
 		Body:       cust,
+		StatusCode: http.StatusCreated,
+	}
+
+	HandlerResponse(w, http.StatusAccepted, response)
+
+}
+
+func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Request) {
+	product := domain.Product{}
+	err := UnmarshalJSONToStruct(w, r, &product)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    "failed to unmarshal to struct",
+			},
+		}
+		HandlerResponse(w, http.StatusInternalServerError, response)
+		return
+
+	}
+	if product.Name == "" || product.UnitPrice == 0 {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "invalid request data, ensure name and unit_price is provided",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+	}
+
+	prod, err := h.Usecases.CreateProduct(&product)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "failed to create product record",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+
+	}
+	response := dto.APIResponse{
+		Message:    "product created successfully",
+		Body:       prod,
+		StatusCode: http.StatusCreated,
+	}
+
+	HandlerResponse(w, http.StatusAccepted, response)
+
+}
+
+func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	order := dto.OrderInput{}
+	err := UnmarshalJSONToStruct(w, r, &order)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    "failed to unmarshal to struct",
+			},
+		}
+		HandlerResponse(w, http.StatusInternalServerError, response)
+		return
+
+	}
+
+	prod, err := h.Usecases.CreateOrder(&order.Order, &order.OrderProduct)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "failed to create order record",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+
+	}
+	response := dto.APIResponse{
+		Message:    "order created successfully",
+		Body:       prod,
 		StatusCode: http.StatusCreated,
 	}
 

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/google/uuid"
 )
 
 func GetEnv(envName string) string {
@@ -19,9 +17,7 @@ func GetEnv(envName string) string {
 	return envVar
 }
 
-func NewUUID() uuid.UUID {
-	uuid, _ := uuid.NewUUID()
-	return uuid
-}
-
-
+// func NewUUID() uuid.UUID {
+// 	uuid, _ := uuid.NewUUID()
+// 	return uuid
+// }

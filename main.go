@@ -21,7 +21,9 @@ func SetUpRouter() {
 	usecases := usecases.NewOrderService(rep)
 	handler := rest.NewHandler(usecases)
 
-	router.Path("/customer").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateCustomer)
+	router.Path("/customers").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateCustomer)
+	router.Path("/products").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateProduct)
+	router.Path("/orders").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateOrder)
 
 	//start and listen to requests
 	http.ListenAndServe(":8080", router)
