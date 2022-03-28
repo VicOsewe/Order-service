@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/VicOsewe/Order-service/infrastucture/databases/postgres"
+	ait "github.com/VicOsewe/Order-service/infrastucture/services/AIT"
+
 	"github.com/VicOsewe/Order-service/presentation/rest"
 	"github.com/VicOsewe/Order-service/usecases"
 
@@ -17,8 +19,10 @@ func main() {
 
 func SetUpRouter() {
 	router := mux.NewRouter()
-	rep := postgres.NewOrderService()
-	usecases := usecases.NewOrderService(rep)
+	db := postgres.NewOrderService()
+	smsService := ait.NewAITService()
+
+	usecases := usecases.NewOrderService(db, smsService)
 	handler := rest.NewHandler(usecases)
 
 	router.Path("/customers").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateCustomer)
