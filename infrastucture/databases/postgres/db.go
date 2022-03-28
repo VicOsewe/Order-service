@@ -6,6 +6,7 @@ import (
 
 	"github.com/VicOsewe/Order-service/application"
 	"github.com/VicOsewe/Order-service/domain"
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 
 	"gorm.io/gorm"
@@ -50,7 +51,7 @@ func InitializeDatabase() *gorm.DB {
 
 //CreateCustomer creates a record of a customer in the database
 func (db *OrderService) CreateCustomer(customer *domain.Customer) (*domain.Customer, error) {
-	customer.ID = application.NewUUID()
+	customer.ID = uuid.New().String()
 	if err := db.DB.Create(customer).Error; err != nil {
 		return nil, fmt.Errorf(
 			"can't create customer record: err: %v",
@@ -62,7 +63,7 @@ func (db *OrderService) CreateCustomer(customer *domain.Customer) (*domain.Custo
 
 //CreateProduct creates a record of a product in the database
 func (db *OrderService) CreateProduct(product *domain.Product) (*domain.Product, error) {
-	product.ID = application.NewUUID()
+	product.ID = uuid.New().String()
 	if err := db.DB.Create(product).Error; err != nil {
 		return nil, fmt.Errorf(
 			"can't create a product record: err: %v",
@@ -75,14 +76,14 @@ func (db *OrderService) CreateProduct(product *domain.Product) (*domain.Product,
 
 //CreateOrder creates a record of an order int he database
 func (db *OrderService) CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*domain.Order, error) {
-	order.ID = application.NewUUID()
+	order.ID = uuid.New().String()
 	err := db.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&order).Error; err != nil {
 			return err
 		}
 
 		for _, orderProduct := range *orderProducts {
-			orderProduct.ID = application.NewUUID()
+			orderProduct.ID = uuid.New().String()
 			orderProduct.OrderID = order.ID
 			if err := tx.Create(&orderProduct).Error; err != nil {
 				return err
@@ -96,4 +97,25 @@ func (db *OrderService) CreateOrder(order *domain.Order, orderProducts *[]domain
 	}
 
 	return order, nil
+}
+
+//GetCustomerByID retrieves a record of a customer in the database using the customer id
+func (db *OrderService) GetCustomerByID(customerID string) (*domain.Customer, error) {
+	customer := domain.Customer{}
+	if err := db.DB.Where(
+		&domain.Customer{ID: customerID}).
+		Find(&customer).Error; err != nil {
+		return nil, err
+	}
+	return &customer, nil
+}
+
+func (db *OrderService) GetProductByID(productID string) (*domain.Product, error) {
+	product := domain.Product{}
+	if err := db.DB.Where(
+		&domain.Customer{ID: productID}).
+		Find(&product).Error; err != nil {
+		return nil, err
+	}
+	return &product, nil
 }

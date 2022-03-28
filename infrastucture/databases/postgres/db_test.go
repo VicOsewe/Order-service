@@ -3,10 +3,10 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/VicOsewe/Order-service/application"
 	"github.com/VicOsewe/Order-service/domain"
 	"github.com/VicOsewe/Order-service/infrastucture/databases/postgres"
 	"github.com/brianvoe/gofakeit"
+	"github.com/google/uuid"
 )
 
 func TestOrderService_CreateCustomer(t *testing.T) {
@@ -15,7 +15,7 @@ func TestOrderService_CreateCustomer(t *testing.T) {
 		customer *domain.Customer
 	}
 	customer := domain.Customer{
-		ID:          application.NewUUID(),
+		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.PhoneFormatted(),
 		FirstName:   gofakeit.FirstName(),
 		LastName:    gofakeit.LastName(),
@@ -56,7 +56,7 @@ func TestOrderService_CreateProduct(t *testing.T) {
 		product *domain.Product
 	}
 	product := domain.Product{
-		ID:        application.NewUUID(),
+		ID:        uuid.New().String(),
 		Name:      gofakeit.CarModel(),
 		UnitPrice: 300.0,
 	}
@@ -96,7 +96,7 @@ func TestOrderService_CreateOrder(t *testing.T) {
 	db := postgres.NewOrderService()
 
 	customer := domain.Customer{
-		ID:          application.NewUUID(),
+		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.PhoneFormatted(),
 		FirstName:   gofakeit.FirstName(),
 		LastName:    gofakeit.LastName(),

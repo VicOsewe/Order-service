@@ -1,40 +1,37 @@
 package domain
 
-import (
-	"github.com/google/uuid"
-)
-
 type Customer struct {
-	ID          uuid.UUID `json:"id" gorm:"primaryKey;unique"`
-	FirstName   string    `json:"first_name"`
-	LastName    string    `json:"last_name"`
-	Username    string    `json:"user_name"`
-	DateOfBirth string    `json:"date_of_birth"`
-	Gender      string    `json:"gender"`
-	PhoneNumber string    `json:"phone_number"`
-	Email       string    `json:"email"`
-	Address     string    `json:"address"`
-	Password    string    `json:"password"`
-	Order       []Order   `gorm:"foreignKey:CustomerID"`
+	ID          string  `json:"id" gorm:"primaryKey;unique"`
+	FirstName   string  `json:"first_name"`
+	LastName    string  `json:"last_name"`
+	Username    string  `json:"user_name"`
+	DateOfBirth string  `json:"date_of_birth"`
+	Gender      string  `json:"gender"`
+	PhoneNumber string  `json:"phone_number"`
+	Email       string  `json:"email"`
+	Address     string  `json:"address"`
+	Password    string  `json:"password"`
+	Order       []Order `gorm:"foreignKey:CustomerID"`
 }
 
 type Order struct {
-	ID           uuid.UUID      `json:"id"`
+	ID           string         `json:"id"`
 	TotalAmount  float64        `json:"total_amount"`
-	CustomerID   uuid.UUID      `json:"customer_id"`
+	CustomerID   string         `json:"customer_id"`
 	OrderProduct []OrderProduct `json:"order_product"`
 }
 
 type Product struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	UnitPrice float64   `json:"unit_price"`
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	UnitPrice float64 `json:"unit_price"`
+	Inventory int
 }
 
 type OrderProduct struct {
-	ID              uuid.UUID `json:"id"`
-	OrderID         uuid.UUID `json:"order_id"`
-	ProductID       uuid.UUID
+	ID              string  `json:"id"`
+	OrderID         string  `json:"order_id"`
+	ProductID       string  `json:"product_id"`
 	ProductQuantity int     `json:"product_quantity"`
 	Product         Product `json:"product" `
 }
