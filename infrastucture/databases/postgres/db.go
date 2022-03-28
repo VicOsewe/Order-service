@@ -113,9 +113,52 @@ func (db *OrderService) GetCustomerByID(customerID string) (*domain.Customer, er
 func (db *OrderService) GetProductByID(productID string) (*domain.Product, error) {
 	product := domain.Product{}
 	if err := db.DB.Where(
-		&domain.Customer{ID: productID}).
+		&domain.Product{ID: productID}).
 		Find(&product).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil
+}
+
+func (db *OrderService) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error) {
+	customer := domain.Customer{}
+	if err := db.DB.Where(
+		&domain.Customer{PhoneNumber: phoneNumber}).
+		Find(&customer).Error; err != nil {
+		return nil, err
+	}
+	return &customer, nil
+}
+
+func (db *OrderService) GetProductByName(name string) (*domain.Product, error) {
+	product := domain.Product{}
+	if err := db.DB.Where(
+		&domain.Product{Name: name}).
+		Find(&product).Error; err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func (db *OrderService) GetAllCustomerOrdersByCustomerID(customerID string) (*[]domain.Order, error) {
+	orders := []domain.Order{}
+	if err := db.DB.Where(
+		&domain.Order{
+			CustomerID: customerID,
+		}).
+		Find(&orders).
+		Error; err != nil {
+		return nil, err
+	}
+
+	return &orders, nil
+}
+
+func (db *OrderService) GetAllProducts() (*[]domain.Product, error) {
+
+	products := []domain.Product{}
+	if err := db.DB.Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return &products, nil
 }
