@@ -12,6 +12,10 @@ type HandlersInterfaces interface {
 	CreateCustomer(w http.ResponseWriter, r *http.Request)
 	CreateProduct(w http.ResponseWriter, r *http.Request)
 	CreateOrder(w http.ResponseWriter, r *http.Request)
+	GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error)
+	GetProductByName(name string) (*domain.Product, error)
+	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]domain.Order, error)
+	GetAllProducts() (*[]domain.Product, error)
 }
 
 type HandlersImplementation struct {
@@ -170,6 +174,182 @@ func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Requ
 	}
 	response := dto.APIResponse{
 		Message:    "order created successfully",
+		Body:       prod,
+		StatusCode: http.StatusCreated,
+	}
+
+	HandlerResponse(w, http.StatusAccepted, response)
+
+}
+
+func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter, r *http.Request) {
+	customer := domain.Customer{}
+	err := UnmarshalJSONToStruct(w, r, &customer)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    "failed to unmarshal to struct",
+			},
+		}
+		HandlerResponse(w, http.StatusInternalServerError, response)
+		return
+
+	}
+	if customer.PhoneNumber == "" {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "invalid request data, phone_number is provided",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+	}
+
+	prod, err := h.Usecases.GetCustomerByPhoneNumber(customer.PhoneNumber)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "failed to fetch customer record",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+
+	}
+	response := dto.APIResponse{
+		Message:    "customer retrieved successfully",
+		Body:       prod,
+		StatusCode: http.StatusCreated,
+	}
+
+	HandlerResponse(w, http.StatusAccepted, response)
+
+}
+
+func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http.Request) {
+	product := domain.Product{}
+	err := UnmarshalJSONToStruct(w, r, &product)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    "failed to unmarshal to struct",
+			},
+		}
+		HandlerResponse(w, http.StatusInternalServerError, response)
+		return
+
+	}
+	if product.Name == "" {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "invalid request data, name is provided",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+	}
+
+	prod, err := h.Usecases.GetProductByName(product.Name)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "failed to fetch product record",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+
+	}
+	response := dto.APIResponse{
+		Message:    "product retrieved successfully",
+		Body:       prod,
+		StatusCode: http.StatusCreated,
+	}
+
+	HandlerResponse(w, http.StatusAccepted, response)
+
+}
+
+func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.Request) {
+
+	prod, err := h.Usecases.GetAllProducts()
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "failed to fetch products record",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+
+	}
+	response := dto.APIResponse{
+		Message:    "products retrieved successfully",
+		Body:       prod,
+		StatusCode: http.StatusCreated,
+	}
+
+	HandlerResponse(w, http.StatusAccepted, response)
+
+}
+
+func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.ResponseWriter, r *http.Request) {
+
+	customer := domain.Customer{}
+	err := UnmarshalJSONToStruct(w, r, &customer)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    "failed to unmarshal to struct",
+			},
+		}
+		HandlerResponse(w, http.StatusInternalServerError, response)
+		return
+
+	}
+	if customer.PhoneNumber == "" {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "invalid request data, phone_number is provided",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+	}
+
+	prod, err := h.Usecases.GetAllCustomerOrdersByPhoneNumber(customer.PhoneNumber)
+	if err != nil {
+		response := dto.APIFailureResponse{
+			Error: err.Error(),
+			APIResponse: dto.APIResponse{
+				StatusCode: http.StatusBadRequest,
+				Message:    "failed to fetch order record",
+			},
+		}
+		HandlerResponse(w, http.StatusBadRequest, response)
+		return
+
+	}
+	response := dto.APIResponse{
+		Message:    "orders retrieved successfully",
 		Body:       prod,
 		StatusCode: http.StatusCreated,
 	}

@@ -8,4 +8,8 @@ type Repository interface {
 	CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*domain.Order, error)
 	GetCustomerByID(customerID string) (*domain.Customer, error)
 	GetProductByID(productID string) (*domain.Product, error)
+	GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error)
+	GetProductByName(name string) (*domain.Product, error)
+	GetAllCustomerOrdersByCustomerID(customerID string) (*[]domain.Order, error)
+	GetAllProducts() (*[]domain.Product, error)
 }

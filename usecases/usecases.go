@@ -11,6 +11,10 @@ type OrderService interface {
 	CreateCustomer(customer *domain.Customer) (*domain.Customer, error)
 	CreateProduct(product *domain.Product) (*domain.Product, error)
 	CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*string, error)
+	GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error)
+	GetProductByName(name string) (*domain.Product, error)
+	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]domain.Order, error)
+	GetAllProducts() (*[]domain.Product, error)
 }
 
 type Service struct {
@@ -87,4 +91,48 @@ func (s *Service) CreateOrder(order *domain.Order, orderProducts *[]domain.Order
 	}
 
 	return &ord.ID, nil
+}
+
+func (s *Service) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error) {
+	customer, err := s.Repository.GetCustomerByPhoneNumber(phoneNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get customer record with phone_number %v and err %v", phoneNumber, err)
+	}
+	return customer, nil
+
+}
+
+func (s *Service) GetProductByName(name string) (*domain.Product, error) {
+	product, err := s.Repository.GetProductByName(name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve product with name:  %v and err: %v ", name, err)
+	}
+	return product, nil
+}
+
+func (s *Service) GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]domain.Order, error) {
+	customer, err := s.Repository.GetCustomerByPhoneNumber(phoneNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get customer record with phone_number %v and err %v", phoneNumber, err)
+	}
+	if customer == nil {
+		return nil, fmt.Errorf("failed to get customer")
+	}
+
+	order, err := s.Repository.GetAllCustomerOrdersByCustomerID(customer.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve orders of the cutomer with id: %v and err of %v", customer.ID, err)
+	}
+	return order, nil
+}
+
+func (s *Service) GetAllProducts() (*[]domain.Product, error) {
+	products, err := s.Repository.GetAllProducts()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get products with an error of %v", err)
+	}
+	if products == nil {
+		return nil, fmt.Errorf("failed to find any products")
+	}
+	return products, nil
 }
