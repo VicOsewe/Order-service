@@ -24,6 +24,7 @@ func SetUpRouter() {
 
 	usecases := usecases.NewOrderService(db, smsService)
 	handler := rest.NewHandler(usecases)
+	router.Use(handler.BasicAuth())
 
 	router.Path("/customers").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateCustomer)
 	router.Path("/products").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateProduct)
