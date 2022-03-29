@@ -16,8 +16,3 @@ func GetEnv(envName string) string {
 
 	return envVar
 }
-
-// func NewUUID() uuid.UUID {
-// 	uuid, _ := uuid.NewUUID()
-// 	return uuid
-// }

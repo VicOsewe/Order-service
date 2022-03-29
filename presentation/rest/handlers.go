@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/VicOsewe/Order-service/application/dto"
@@ -19,13 +20,26 @@ type HandlersInterfaces interface {
 }
 
 type HandlersImplementation struct {
+	auth struct {
+		username string
+		password string
+	}
 	Usecases usecases.OrderService
 }
 
 func NewHandler(usecases usecases.OrderService) HandlersImplementation {
-	return HandlersImplementation{
+
+	app := HandlersImplementation{
 		Usecases: usecases,
 	}
+	if app.auth.username == "" {
+		log.Fatal("basic auth username must be provided")
+	}
+
+	if app.auth.password == "" {
+		log.Fatal("basic auth password must be provided")
+	}
+	return app
 }
 
 func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.Request) {
