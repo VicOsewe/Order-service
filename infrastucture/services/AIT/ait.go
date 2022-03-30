@@ -18,6 +18,7 @@ type ServiceAITImpl struct {
 	client http.Client
 }
 
+//New ...
 func New(client http.Client) ServiceAITImpl {
 	return ServiceAITImpl{client: client}
 }
@@ -29,8 +30,9 @@ func NewAITService() *ServiceAITImpl {
 	}
 }
 
+//SendSMS ...
 func (s *ServiceAITImpl) SendSMS(message, phoneNumber string) error {
-	aitUrl := application.GetEnv("AIT_URL")
+	aitURL := application.GetEnv("AIT_URL")
 	apiKey := application.GetEnv("AIT_API_KEY")
 	username := application.GetEnv("AIT_USERNAME")
 	values := url.Values{}
@@ -38,7 +40,7 @@ func (s *ServiceAITImpl) SendSMS(message, phoneNumber string) error {
 	values.Set("username", username)
 	values.Set("message", message)
 	values.Set("to", phoneNumber)
-	response, err := s.NewRequest(aitUrl, apiKey, http.MethodPost, values)
+	response, err := s.NewRequest(aitURL, apiKey, http.MethodPost, values)
 	if err != nil {
 		return err
 	}

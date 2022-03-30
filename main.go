@@ -17,6 +17,7 @@ func main() {
 
 }
 
+//SetUpRouter ..
 func SetUpRouter() {
 	router := mux.NewRouter()
 	db := postgres.NewOrderService()

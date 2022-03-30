@@ -15,6 +15,7 @@ import (
 	"github.com/ttacon/libphonenumber"
 )
 
+//ValidateCustomerInfo ...
 func ValidateCustomerInfo(customer domain.Customer) error {
 	if customer.FirstName == "" || customer.LastName == "" || customer.PhoneNumber == "" || customer.Password == "" {
 		return fmt.Errorf("invalid  request data, ensure firstname, lastname, phone_number, password is provided")
@@ -30,6 +31,7 @@ func ValidateCustomerInfo(customer domain.Customer) error {
 	return nil
 }
 
+//ValidateEmail ...
 func ValidateEmail(email string) error {
 	_, err := mail.ParseAddress(email)
 	if err != nil {
@@ -38,6 +40,7 @@ func ValidateEmail(email string) error {
 	return nil
 }
 
+//ValidatePhoneNumber ...
 func ValidatePhoneNumber(phoneNumber string) error {
 	if len(phoneNumber) < 10 {
 		return fmt.Errorf("invalid phone number")
@@ -50,6 +53,7 @@ func ValidatePhoneNumber(phoneNumber string) error {
 	return nil
 }
 
+//NormalizePhoneNumber ...
 func NormalizePhoneNumber(phoneNumber string) (string, error) {
 	defaultRegion := "KE"
 	num, err := libphonenumber.Parse(phoneNumber, defaultRegion)
@@ -62,6 +66,7 @@ func NormalizePhoneNumber(phoneNumber string) (string, error) {
 	return cleaned, nil
 }
 
+//UnmarshalJSONToStruct ..
 func UnmarshalJSONToStruct(w http.ResponseWriter, r *http.Request, targetStruct interface{}) error {
 	err := json.NewDecoder(r.Body).Decode(targetStruct)
 	if err != nil {
@@ -70,6 +75,7 @@ func UnmarshalJSONToStruct(w http.ResponseWriter, r *http.Request, targetStruct 
 	return nil
 }
 
+//HandlerResponse ...
 func HandlerResponse(w http.ResponseWriter, code int, payload interface{}) {
 	marshalledPayload, err := json.Marshal(payload)
 	if err != nil {
@@ -88,6 +94,7 @@ func HandlerResponse(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
+//BasicAuth ...
 func (h *HandlersImplementation) BasicAuth() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(

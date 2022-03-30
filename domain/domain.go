@@ -1,5 +1,6 @@
 package domain
 
+//Customer ...
 type Customer struct {
 	ID          string  `json:"id" gorm:"primaryKey;unique"`
 	FirstName   string  `json:"first_name"`
@@ -14,6 +15,7 @@ type Customer struct {
 	Order       []Order `gorm:"foreignKey:CustomerID"`
 }
 
+//Order ...
 type Order struct {
 	ID           string         `json:"id"`
 	TotalAmount  float64        `json:"total_amount"`
@@ -21,6 +23,7 @@ type Order struct {
 	OrderProduct []OrderProduct `json:"order_product"`
 }
 
+//Product ...
 type Product struct {
 	ID        string  `json:"id"`
 	Name      string  `json:"name"`
@@ -28,6 +31,7 @@ type Product struct {
 	Inventory int
 }
 
+//OrderProduct ...
 type OrderProduct struct {
 	ID              string  `json:"id"`
 	OrderID         string  `json:"order_id"`

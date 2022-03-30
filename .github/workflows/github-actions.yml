@@ -7,59 +7,73 @@ on:
   pull_request:
 
 jobs:
-  # lint:
-  #   name: Lint
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Setup Go
-  #       uses: actions/setup-go@v1
-  #       with:
-  #         go-version: 1.17
 
-  #     - name: Check out code
-  #       uses: actions/checkout@v1
+  audit:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
 
-  #     - name: Lint Go Code
-  #       run: |
-  #         export PATH=$PATH:$(go env GOPATH)/bin # temporary fix. See https://github.com/actions/setup-go/issues/14
-  #         go get -u golang.org/x/lint/golint
-  #         make lint
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Install staticcheck
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+    - name: Run staticcheck
+      run: staticcheck ./...
+
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
+
+    - name: Run golint
+      run: golint ./...
 
   test:
-    name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: db
+        options: &gt;-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DB_DSN: 'postgres://user:pass@localhost/db?sslmode=disable'
+
     steps:
+      - uses: actions/checkout@v2
+
       - name: Set up Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: 1.17
 
-      - name: Check out code
-        uses: actions/checkout@v1
+      - name: Enable citext
+        run: psql 'postgres://user:pass@localhost/db?sslmode=disable' -tc "CREATE EXTENSION citext;"
 
-      - name: Run Unit tests.
-        run: make test-coverage
+      - name: Install migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
-      - name: Upload Coverage report to CodeCov
-        uses: codecov/codecov-action@v1.0.0
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          file: ./coverage.txt
+      - name: Run DB migrations
+        run: migrate -path ./migrations -database 'postgres://user:pass@localhost/db?sslmode=disable' up
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: [lint,test]
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.17
-
-      - name: Check out code   
-        uses: actions/checkout@v1
-
-      - name: Build
-        run: make build         
-
-      
+      - name: Run tests
+        run: go test ./...

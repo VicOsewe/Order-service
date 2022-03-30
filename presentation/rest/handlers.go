@@ -9,6 +9,7 @@ import (
 	"github.com/VicOsewe/Order-service/usecases"
 )
 
+//HandlersInterfaces ...
 type HandlersInterfaces interface {
 	CreateCustomer(w http.ResponseWriter, r *http.Request)
 	CreateProduct(w http.ResponseWriter, r *http.Request)
@@ -19,6 +20,7 @@ type HandlersInterfaces interface {
 	GetAllProducts() (*[]domain.Product, error)
 }
 
+//HandlersImplementation ...
 type HandlersImplementation struct {
 	auth struct {
 		username string
@@ -27,6 +29,7 @@ type HandlersImplementation struct {
 	Usecases usecases.OrderService
 }
 
+//NewHandler ...
 func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 
 	app := HandlersImplementation{
@@ -42,6 +45,7 @@ func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 	return app
 }
 
+//CreateCustomer ...
 func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	customer := domain.Customer{}
 	err := UnmarshalJSONToStruct(w, r, &customer)
@@ -107,6 +111,7 @@ func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.R
 
 }
 
+//CreateProduct ...
 func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	product := domain.Product{}
 	err := UnmarshalJSONToStruct(w, r, &product)
@@ -157,6 +162,7 @@ func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Re
 
 }
 
+//CreateOrder ...
 func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	order := dto.OrderInput{}
 	err := UnmarshalJSONToStruct(w, r, &order)
@@ -196,6 +202,7 @@ func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Requ
 
 }
 
+//GetCustomerByPhoneNumber ...
 func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter, r *http.Request) {
 	customer := domain.Customer{}
 	err := UnmarshalJSONToStruct(w, r, &customer)
@@ -246,6 +253,7 @@ func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter,
 
 }
 
+//GetProductByName ...
 func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http.Request) {
 	product := domain.Product{}
 	err := UnmarshalJSONToStruct(w, r, &product)
@@ -296,6 +304,7 @@ func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http
 
 }
 
+//GetAllProducts ...
 func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.Request) {
 
 	prod, err := h.Usecases.GetAllProducts()
@@ -321,6 +330,7 @@ func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.R
 
 }
 
+//GetAllCustomerOrdersByPhoneNumber ...
 func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.ResponseWriter, r *http.Request) {
 
 	customer := domain.Customer{}

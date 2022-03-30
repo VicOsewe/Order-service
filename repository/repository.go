@@ -2,6 +2,7 @@ package repository
 
 import "github.com/VicOsewe/Order-service/domain"
 
+//Repository ...
 type Repository interface {
 	CreateCustomer(customer *domain.Customer) (*domain.Customer, error)
 	CreateProduct(product *domain.Product) (*domain.Product, error)

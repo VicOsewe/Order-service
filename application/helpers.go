@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+//GetEnv ...
 func GetEnv(envName string) string {
 	envVar := os.Getenv(envName)
 	if envVar == "" {

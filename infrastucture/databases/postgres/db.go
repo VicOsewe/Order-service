@@ -12,14 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
+//OrderService ...
 type OrderService struct {
 	DB *gorm.DB
 }
 
+//New ..
 func New(db *gorm.DB) OrderService {
 	return OrderService{db}
 }
 
+//NewOrderService ...
 func NewOrderService() *OrderService {
 	m := OrderService{
 		DB: InitializeDatabase(),
@@ -27,6 +30,8 @@ func NewOrderService() *OrderService {
 	return &m
 
 }
+
+//InitializeDatabase ...
 func InitializeDatabase() *gorm.DB {
 	password := application.GetEnv("DBPASSWORD")
 	user := application.GetEnv("DBUSER")
@@ -110,6 +115,7 @@ func (db *OrderService) GetCustomerByID(customerID string) (*domain.Customer, er
 	return &customer, nil
 }
 
+//GetProductByID ...
 func (db *OrderService) GetProductByID(productID string) (*domain.Product, error) {
 	product := domain.Product{}
 	if err := db.DB.Where(
@@ -120,6 +126,7 @@ func (db *OrderService) GetProductByID(productID string) (*domain.Product, error
 	return &product, nil
 }
 
+//GetCustomerByPhoneNumber ...
 func (db *OrderService) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error) {
 	customer := domain.Customer{}
 	if err := db.DB.Where(
@@ -130,6 +137,7 @@ func (db *OrderService) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Cu
 	return &customer, nil
 }
 
+//GetProductByName ...
 func (db *OrderService) GetProductByName(name string) (*domain.Product, error) {
 	product := domain.Product{}
 	if err := db.DB.Where(
@@ -140,6 +148,7 @@ func (db *OrderService) GetProductByName(name string) (*domain.Product, error) {
 	return &product, nil
 }
 
+//GetAllCustomerOrdersByCustomerID ...
 func (db *OrderService) GetAllCustomerOrdersByCustomerID(customerID string) (*[]domain.Order, error) {
 	orders := []domain.Order{}
 	if err := db.DB.Where(
@@ -154,6 +163,7 @@ func (db *OrderService) GetAllCustomerOrdersByCustomerID(customerID string) (*[]
 	return &orders, nil
 }
 
+//GetAllProducts ...
 func (db *OrderService) GetAllProducts() (*[]domain.Product, error) {
 
 	products := []domain.Product{}
