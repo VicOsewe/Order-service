@@ -1,5 +1,8 @@
 package domain
 
+import "gorm.io/gorm"
+
+//Customer ...
 type Customer struct {
 	ID          string  `json:"id" gorm:"primaryKey;unique"`
 	FirstName   string  `json:"first_name"`
@@ -14,6 +17,12 @@ type Customer struct {
 	Order       []Order `gorm:"foreignKey:CustomerID"`
 }
 
+func (customer *Customer) BeforeCreate(tx *gorm.DB) error {
+	// encrypt pin
+	return nil
+}
+
+//Order ...
 type Order struct {
 	ID           string         `json:"id"`
 	TotalAmount  float64        `json:"total_amount"`

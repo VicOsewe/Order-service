@@ -12,4 +12,5 @@ type Repository interface {
 	GetProductByName(name string) (*domain.Product, error)
 	GetAllCustomerOrdersByCustomerID(customerID string) (*[]domain.Order, error)
 	GetAllProducts() (*[]domain.Product, error)
+	UpdateCustomer(customer *domain.Customer) (*domain.Customer, error)
 }

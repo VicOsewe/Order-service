@@ -162,3 +162,11 @@ func (db *OrderService) GetAllProducts() (*[]domain.Product, error) {
 	}
 	return &products, nil
 }
+
+//UpdateCustomer updates the records of a customer
+func (db *OrderService) UpdateCustomer(customer *domain.Customer) (*domain.Customer, error) {
+	if err := db.DB.Where(&domain.Customer{PhoneNumber: customer.PhoneNumber}).Updates(customer).Error; err != nil {
+		return nil, err
+	}
+	return customer, nil
+}
