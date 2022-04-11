@@ -36,12 +36,11 @@ func (s *Service) CreateCustomer(customer *dao.Customer) (*dao.Customer, error) 
 	if customer == nil {
 		return nil, fmt.Errorf("customer fields required")
 	}
-
 	customerDetails, err := s.Repository.GetCustomerByPhoneNumber(customer.PhoneNumber)
 	if err != nil {
 		return nil, err
 	}
-	if customerDetails == nil {
+	if customerDetails.ID == "" {
 		cust, err := s.Repository.CreateCustomer(customer)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create customer :%v", err)
