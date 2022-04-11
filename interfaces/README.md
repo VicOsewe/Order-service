@@ -1,0 +1,2 @@
+Clean architecture dictates that dependency should only point inwards therefore the inner layers(the usecase layer) should not have any idea of the implementations of the database, third party interactions. So this is just an interface.
+This will ensures that the system is independent of a database and any third party agencies making it easier to switch them without affecting the business logic.

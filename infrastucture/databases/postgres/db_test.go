@@ -3,7 +3,7 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/VicOsewe/Order-service/domain"
+	"github.com/VicOsewe/Order-service/domain/dao"
 	"github.com/VicOsewe/Order-service/infrastucture/databases/postgres"
 	"github.com/brianvoe/gofakeit"
 	"github.com/google/uuid"
@@ -12,9 +12,9 @@ import (
 func TestOrderService_CreateCustomer(t *testing.T) {
 
 	type args struct {
-		customer *domain.Customer
+		customer *dao.Customer
 	}
-	customer := domain.Customer{
+	customer := dao.Customer{
 		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.PhoneFormatted(),
 		FirstName:   gofakeit.FirstName(),
@@ -53,9 +53,9 @@ func TestOrderService_CreateCustomer(t *testing.T) {
 func TestOrderService_CreateProduct(t *testing.T) {
 
 	type args struct {
-		product *domain.Product
+		product *dao.Product
 	}
-	product := domain.Product{
+	product := dao.Product{
 		ID:        uuid.New().String(),
 		Name:      gofakeit.CarModel(),
 		UnitPrice: 300.0,
@@ -63,7 +63,7 @@ func TestOrderService_CreateProduct(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *domain.Product
+		want    *dao.Product
 		wantErr bool
 	}{
 		{
@@ -89,13 +89,13 @@ func TestOrderService_CreateProduct(t *testing.T) {
 
 func TestOrderService_CreateOrder(t *testing.T) {
 	type args struct {
-		order         *domain.Order
-		orderProducts *[]domain.OrderProduct
+		order         *dao.Order
+		orderProducts *[]dao.OrderProduct
 	}
 
 	db := postgres.NewOrderService()
 
-	customer := domain.Customer{
+	customer := dao.Customer{
 		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.PhoneFormatted(),
 		FirstName:   gofakeit.FirstName(),
@@ -108,17 +108,17 @@ func TestOrderService_CreateOrder(t *testing.T) {
 		t.Fatalf("failed to create customer")
 	}
 
-	product := domain.Product{}
+	product := dao.Product{}
 	prod, err := db.CreateProduct(&product)
 	if err != nil {
 		t.Fatalf("failed to create product")
 	}
-	order := domain.Order{
+	order := dao.Order{
 		TotalAmount: 3000,
 		CustomerID:  cust.ID,
 	}
 
-	orderProduct := domain.OrderProduct{
+	orderProduct := dao.OrderProduct{
 		Product:         *prod,
 		ProductQuantity: 1,
 	}
@@ -126,14 +126,14 @@ func TestOrderService_CreateOrder(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *domain.Order
+		want    *dao.Order
 		wantErr bool
 	}{
 		{
 			name: "happy case:",
 			args: args{
 				order: &order,
-				orderProducts: &[]domain.OrderProduct{
+				orderProducts: &[]dao.OrderProduct{
 					orderProduct,
 				},
 			},
@@ -156,11 +156,11 @@ func TestOrderService_CreateOrder(t *testing.T) {
 func TestOrderService_UpdateCustomer(t *testing.T) {
 
 	type args struct {
-		customer *domain.Customer
+		customer *dao.Customer
 	}
 	db := postgres.NewOrderService()
 
-	customer := domain.Customer{
+	customer := dao.Customer{
 		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.PhoneFormatted(),
 		FirstName:   gofakeit.FirstName(),
@@ -176,13 +176,13 @@ func TestOrderService_UpdateCustomer(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *domain.Customer
+		want    *dao.Customer
 		wantErr bool
 	}{
 		{
 			name: "happy case:",
 			args: args{
-				customer: &domain.Customer{
+				customer: &dao.Customer{
 					PhoneNumber: customerDetails.PhoneNumber,
 					FirstName:   "new name",
 				},

@@ -3,19 +3,19 @@ package usecases
 import (
 	"fmt"
 
-	"github.com/VicOsewe/Order-service/application/interfaces"
-	"github.com/VicOsewe/Order-service/domain"
-	"github.com/VicOsewe/Order-service/repository"
+	"github.com/VicOsewe/Order-service/domain/dao"
+	"github.com/VicOsewe/Order-service/interfaces/repository"
+	interfaces "github.com/VicOsewe/Order-service/interfaces/services"
 )
 
 type OrderService interface {
-	CreateCustomer(customer *domain.Customer) (*domain.Customer, error)
-	CreateProduct(product *domain.Product) (*domain.Product, error)
-	CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*string, error)
-	GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error)
-	GetProductByName(name string) (*domain.Product, error)
-	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]domain.Order, error)
-	GetAllProducts() (*[]domain.Product, error)
+	CreateCustomer(customer *dao.Customer) (*dao.Customer, error)
+	CreateProduct(product *dao.Product) (*dao.Product, error)
+	CreateOrder(order *dao.Order, orderProducts *[]dao.OrderProduct) (*string, error)
+	GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error)
+	GetProductByName(name string) (*dao.Product, error)
+	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]dao.Order, error)
+	GetAllProducts() (*[]dao.Product, error)
 }
 
 type Service struct {
@@ -32,7 +32,7 @@ func NewOrderService(repo repository.Repository, sms interfaces.SMS) *Service {
 
 //CreateCustomer checks to see if a customer records exists and if not it creates a new record
 // of the customer details
-func (s *Service) CreateCustomer(customer *domain.Customer) (*domain.Customer, error) {
+func (s *Service) CreateCustomer(customer *dao.Customer) (*dao.Customer, error) {
 	if customer == nil {
 		return nil, fmt.Errorf("customer fields required")
 	}
@@ -52,7 +52,7 @@ func (s *Service) CreateCustomer(customer *domain.Customer) (*domain.Customer, e
 	return customerDetails, nil
 }
 
-func (s *Service) CreateProduct(product *domain.Product) (*domain.Product, error) {
+func (s *Service) CreateProduct(product *dao.Product) (*dao.Product, error) {
 
 	if product == nil {
 		return nil, fmt.Errorf("product fields required")
@@ -66,7 +66,7 @@ func (s *Service) CreateProduct(product *domain.Product) (*domain.Product, error
 	return prod, nil
 }
 
-func (s *Service) CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*string, error) {
+func (s *Service) CreateOrder(order *dao.Order, orderProducts *[]dao.OrderProduct) (*string, error) {
 	if order.CustomerID == "" {
 		return nil, fmt.Errorf("ensure customer_id is provided")
 	}
@@ -109,7 +109,7 @@ func (s *Service) CreateOrder(order *domain.Order, orderProducts *[]domain.Order
 	return &ord.ID, nil
 }
 
-func (s *Service) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error) {
+func (s *Service) GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error) {
 	customer, err := s.Repository.GetCustomerByPhoneNumber(phoneNumber)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get customer record with phone_number %v and err %v", phoneNumber, err)
@@ -118,7 +118,7 @@ func (s *Service) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer
 
 }
 
-func (s *Service) GetProductByName(name string) (*domain.Product, error) {
+func (s *Service) GetProductByName(name string) (*dao.Product, error) {
 	product, err := s.Repository.GetProductByName(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve product with name:  %v and err: %v ", name, err)
@@ -126,7 +126,7 @@ func (s *Service) GetProductByName(name string) (*domain.Product, error) {
 	return product, nil
 }
 
-func (s *Service) GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]domain.Order, error) {
+func (s *Service) GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]dao.Order, error) {
 	customer, err := s.Repository.GetCustomerByPhoneNumber(phoneNumber)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get customer record with phone_number %v and err %v", phoneNumber, err)
@@ -142,7 +142,7 @@ func (s *Service) GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]doma
 	return order, nil
 }
 
-func (s *Service) GetAllProducts() (*[]domain.Product, error) {
+func (s *Service) GetAllProducts() (*[]dao.Product, error) {
 	products, err := s.Repository.GetAllProducts()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products with an error of %v", err)

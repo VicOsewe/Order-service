@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/VicOsewe/Order-service/application"
-	"github.com/VicOsewe/Order-service/domain"
+	"github.com/VicOsewe/Order-service/domain/dao"
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 
@@ -44,13 +44,13 @@ func InitializeDatabase() *gorm.DB {
 	}
 	log.Print("connected to the database successfully")
 
-	db.AutoMigrate(&domain.Customer{}, &domain.Order{}, &domain.Product{}, &domain.OrderProduct{})
+	db.AutoMigrate(&dao.Customer{}, &dao.Order{}, &dao.Product{}, &dao.OrderProduct{})
 	return db
 
 }
 
 //CreateCustomer creates a record of a customer in the database
-func (db *OrderService) CreateCustomer(customer *domain.Customer) (*domain.Customer, error) {
+func (db *OrderService) CreateCustomer(customer *dao.Customer) (*dao.Customer, error) {
 	customer.ID = uuid.New().String()
 	if err := db.DB.Create(customer).Error; err != nil {
 		return nil, fmt.Errorf(
@@ -62,7 +62,7 @@ func (db *OrderService) CreateCustomer(customer *domain.Customer) (*domain.Custo
 }
 
 //CreateProduct creates a record of a product in the database
-func (db *OrderService) CreateProduct(product *domain.Product) (*domain.Product, error) {
+func (db *OrderService) CreateProduct(product *dao.Product) (*dao.Product, error) {
 	product.ID = uuid.New().String()
 	if err := db.DB.Create(product).Error; err != nil {
 		return nil, fmt.Errorf(
@@ -75,7 +75,7 @@ func (db *OrderService) CreateProduct(product *domain.Product) (*domain.Product,
 }
 
 //CreateOrder creates a record of an order int he database
-func (db *OrderService) CreateOrder(order *domain.Order, orderProducts *[]domain.OrderProduct) (*domain.Order, error) {
+func (db *OrderService) CreateOrder(order *dao.Order, orderProducts *[]dao.OrderProduct) (*dao.Order, error) {
 	order.ID = uuid.New().String()
 	err := db.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&order).Error; err != nil {
@@ -100,50 +100,50 @@ func (db *OrderService) CreateOrder(order *domain.Order, orderProducts *[]domain
 }
 
 //GetCustomerByID retrieves a record of a customer in the database using the customer id
-func (db *OrderService) GetCustomerByID(customerID string) (*domain.Customer, error) {
-	customer := domain.Customer{}
+func (db *OrderService) GetCustomerByID(customerID string) (*dao.Customer, error) {
+	customer := dao.Customer{}
 	if err := db.DB.Where(
-		&domain.Customer{ID: customerID}).
+		&dao.Customer{ID: customerID}).
 		Find(&customer).Error; err != nil {
 		return nil, err
 	}
 	return &customer, nil
 }
 
-func (db *OrderService) GetProductByID(productID string) (*domain.Product, error) {
-	product := domain.Product{}
+func (db *OrderService) GetProductByID(productID string) (*dao.Product, error) {
+	product := dao.Product{}
 	if err := db.DB.Where(
-		&domain.Product{ID: productID}).
+		&dao.Product{ID: productID}).
 		Find(&product).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil
 }
 
-func (db *OrderService) GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error) {
-	customer := domain.Customer{}
+func (db *OrderService) GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error) {
+	customer := dao.Customer{}
 	if err := db.DB.Where(
-		&domain.Customer{PhoneNumber: phoneNumber}).
+		&dao.Customer{PhoneNumber: phoneNumber}).
 		Find(&customer).Error; err != nil {
 		return nil, err
 	}
 	return &customer, nil
 }
 
-func (db *OrderService) GetProductByName(name string) (*domain.Product, error) {
-	product := domain.Product{}
+func (db *OrderService) GetProductByName(name string) (*dao.Product, error) {
+	product := dao.Product{}
 	if err := db.DB.Where(
-		&domain.Product{Name: name}).
+		&dao.Product{Name: name}).
 		Find(&product).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil
 }
 
-func (db *OrderService) GetAllCustomerOrdersByCustomerID(customerID string) (*[]domain.Order, error) {
-	orders := []domain.Order{}
+func (db *OrderService) GetAllCustomerOrdersByCustomerID(customerID string) (*[]dao.Order, error) {
+	orders := []dao.Order{}
 	if err := db.DB.Where(
-		&domain.Order{
+		&dao.Order{
 			CustomerID: customerID,
 		}).
 		Find(&orders).
@@ -154,9 +154,9 @@ func (db *OrderService) GetAllCustomerOrdersByCustomerID(customerID string) (*[]
 	return &orders, nil
 }
 
-func (db *OrderService) GetAllProducts() (*[]domain.Product, error) {
+func (db *OrderService) GetAllProducts() (*[]dao.Product, error) {
 
-	products := []domain.Product{}
+	products := []dao.Product{}
 	if err := db.DB.Find(&products).Error; err != nil {
 		return nil, err
 	}
@@ -164,8 +164,8 @@ func (db *OrderService) GetAllProducts() (*[]domain.Product, error) {
 }
 
 //UpdateCustomer updates the records of a customer
-func (db *OrderService) UpdateCustomer(customer *domain.Customer) (*domain.Customer, error) {
-	if err := db.DB.Where(&domain.Customer{PhoneNumber: customer.PhoneNumber}).Updates(customer).Error; err != nil {
+func (db *OrderService) UpdateCustomer(customer *dao.Customer) (*dao.Customer, error) {
+	if err := db.DB.Where(&dao.Customer{PhoneNumber: customer.PhoneNumber}).Updates(customer).Error; err != nil {
 		return nil, err
 	}
 	return customer, nil

@@ -1,0 +1,1 @@
+Data transfer object (DTO). See this as the struct that contains the data structure we are using in the entire application.

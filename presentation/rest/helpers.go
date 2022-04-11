@@ -11,11 +11,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/VicOsewe/Order-service/domain"
+	"github.com/VicOsewe/Order-service/domain/dao"
 	"github.com/ttacon/libphonenumber"
 )
 
-func ValidateCustomerInfo(customer domain.Customer) error {
+func ValidateCustomerInfo(customer dao.Customer) error {
 	if customer.FirstName == "" || customer.LastName == "" || customer.PhoneNumber == "" || customer.Password == "" {
 		return fmt.Errorf("invalid  request data, ensure firstname, lastname, phone_number, password is provided")
 	}
