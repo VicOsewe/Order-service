@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/VicOsewe/Order-service/application"
-	"github.com/VicOsewe/Order-service/application/dto"
+	"github.com/VicOsewe/Order-service/domain/dto"
 )
 
 // ServiceAITImpl represents AIT usecases

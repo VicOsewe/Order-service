@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	smsMocks "github.com/VicOsewe/Order-service/application/interfaces/mocks"
-	"github.com/VicOsewe/Order-service/domain"
-	"github.com/VicOsewe/Order-service/repository/mocks"
+	"github.com/VicOsewe/Order-service/domain/dao"
+	"github.com/VicOsewe/Order-service/interfaces/repository/mocks"
+	smsMocks "github.com/VicOsewe/Order-service/interfaces/services/mocks"
 	"github.com/brianvoe/gofakeit"
 	"github.com/google/uuid"
 )
@@ -22,10 +22,10 @@ func MockNewOrderService() *Service {
 
 func TestService_CreateCustomer(t *testing.T) {
 	type args struct {
-		customer *domain.Customer
+		customer *dao.Customer
 	}
 
-	customer := domain.Customer{
+	customer := dao.Customer{
 		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.PhoneFormatted(),
 		FirstName:   gofakeit.FirstName(),
@@ -36,7 +36,7 @@ func TestService_CreateCustomer(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *domain.Customer
+		want    *dao.Customer
 		wantErr bool
 	}{
 		{
@@ -72,12 +72,12 @@ func TestService_CreateCustomer(t *testing.T) {
 			sms := smsMocks.NewSMSMocks()
 			s := NewOrderService(repo, sms)
 			if tt.name == "sad case:get customer details failed" {
-				repo.MockGetCustomerByPhoneNumber = func(phoneNumber string) (*domain.Customer, error) {
+				repo.MockGetCustomerByPhoneNumber = func(phoneNumber string) (*dao.Customer, error) {
 					return nil, fmt.Errorf("failed to get customer details")
 				}
 			}
 			if tt.name == "sad case:create customer details failed" {
-				repo.MockCreateCustomer = func(customer *domain.Customer) (*domain.Customer, error) {
+				repo.MockCreateCustomer = func(customer *dao.Customer) (*dao.Customer, error) {
 					return nil, fmt.Errorf("failed to create customer")
 				}
 			}

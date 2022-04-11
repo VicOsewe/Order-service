@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/VicOsewe/Order-service/domain"
+import domain "github.com/VicOsewe/Order-service/domain/dao"
 
 type OrderInput struct {
 	Order        domain.Order          `json:"order"`

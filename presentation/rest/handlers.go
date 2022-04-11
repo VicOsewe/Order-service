@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/VicOsewe/Order-service/application/dto"
-	"github.com/VicOsewe/Order-service/domain"
+	"github.com/VicOsewe/Order-service/domain/dao"
+	"github.com/VicOsewe/Order-service/domain/dto"
 	"github.com/VicOsewe/Order-service/usecases"
 )
 
@@ -13,10 +13,10 @@ type HandlersInterfaces interface {
 	CreateCustomer(w http.ResponseWriter, r *http.Request)
 	CreateProduct(w http.ResponseWriter, r *http.Request)
 	CreateOrder(w http.ResponseWriter, r *http.Request)
-	GetCustomerByPhoneNumber(phoneNumber string) (*domain.Customer, error)
-	GetProductByName(name string) (*domain.Product, error)
-	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]domain.Order, error)
-	GetAllProducts() (*[]domain.Product, error)
+	GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error)
+	GetProductByName(name string) (*dao.Product, error)
+	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]dao.Order, error)
+	GetAllProducts() (*[]dao.Product, error)
 }
 
 type HandlersImplementation struct {
@@ -44,7 +44,7 @@ func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 
 //CreateCustomer creates a record of customer details
 func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.Request) {
-	customer := domain.Customer{}
+	customer := dao.Customer{}
 	err := UnmarshalJSONToStruct(w, r, &customer)
 	if err != nil {
 		response := dto.APIFailureResponse{
@@ -109,7 +109,7 @@ func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.R
 }
 
 func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	product := domain.Product{}
+	product := dao.Product{}
 	err := UnmarshalJSONToStruct(w, r, &product)
 	if err != nil {
 		response := dto.APIFailureResponse{
@@ -198,7 +198,7 @@ func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter, r *http.Request) {
-	customer := domain.Customer{}
+	customer := dao.Customer{}
 	err := UnmarshalJSONToStruct(w, r, &customer)
 	if err != nil {
 		response := dto.APIFailureResponse{
@@ -248,7 +248,7 @@ func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter,
 }
 
 func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http.Request) {
-	product := domain.Product{}
+	product := dao.Product{}
 	err := UnmarshalJSONToStruct(w, r, &product)
 	if err != nil {
 		response := dto.APIFailureResponse{
@@ -324,7 +324,7 @@ func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.R
 
 func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.ResponseWriter, r *http.Request) {
 
-	customer := domain.Customer{}
+	customer := dao.Customer{}
 	err := UnmarshalJSONToStruct(w, r, &customer)
 	if err != nil {
 		response := dto.APIFailureResponse{

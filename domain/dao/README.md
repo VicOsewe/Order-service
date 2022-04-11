@@ -1,0 +1,1 @@
+Data Access Object(DAO): Contains data used to retrieve, save and update the database.
