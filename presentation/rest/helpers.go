@@ -16,8 +16,8 @@ import (
 )
 
 func ValidateCustomerInfo(customer dao.Customer) error {
-	if customer.FirstName == "" || customer.LastName == "" || customer.PhoneNumber == "" || customer.Password == "" {
-		return fmt.Errorf("invalid  request data, ensure firstname, lastname, phone_number, password is provided")
+	if customer.FirstName == "" || customer.LastName == "" || customer.PhoneNumber == "" || customer.Password == "" || customer.Email == "" {
+		return fmt.Errorf("invalid  request data, ensure first_name, last_name, phone_number, password, email is provided")
 	}
 	err := ValidateEmail(customer.Email)
 	if err != nil {

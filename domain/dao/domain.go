@@ -14,7 +14,7 @@ type Customer struct {
 	Email       string  `json:"email"`
 	Address     string  `json:"address"`
 	Password    string  `json:"password"`
-	Order       []Order `gorm:"foreignKey:CustomerID"`
+	Order       []Order `json:"-" gorm:"foreignKey:CustomerID"`
 }
 
 func (customer *Customer) BeforeCreate(tx *gorm.DB) error {

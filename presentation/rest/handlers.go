@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/VicOsewe/Order-service/application"
 	"github.com/VicOsewe/Order-service/domain/dao"
 	"github.com/VicOsewe/Order-service/domain/dto"
 	"github.com/VicOsewe/Order-service/usecases"
@@ -32,6 +33,8 @@ func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 	app := HandlersImplementation{
 		Usecases: usecases,
 	}
+	app.auth.password = application.GetEnv("AUTH_PASSWORD")
+	app.auth.username = application.GetEnv("AUTH_USERNAME")
 	if app.auth.username == "" {
 		log.Fatal("basic auth username must be provided")
 	}
