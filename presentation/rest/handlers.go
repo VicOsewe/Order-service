@@ -42,6 +42,7 @@ func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 	return app
 }
 
+//CreateCustomer creates a record of customer details
 func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	customer := domain.Customer{}
 	err := UnmarshalJSONToStruct(w, r, &customer)

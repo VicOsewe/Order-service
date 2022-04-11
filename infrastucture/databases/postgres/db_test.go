@@ -152,3 +152,55 @@ func TestOrderService_CreateOrder(t *testing.T) {
 		})
 	}
 }
+
+func TestOrderService_UpdateCustomer(t *testing.T) {
+
+	type args struct {
+		customer *domain.Customer
+	}
+	db := postgres.NewOrderService()
+
+	customer := domain.Customer{
+		ID:          uuid.New().String(),
+		PhoneNumber: gofakeit.PhoneFormatted(),
+		FirstName:   gofakeit.FirstName(),
+		LastName:    gofakeit.LastName(),
+		Email:       gofakeit.Email(),
+		Password:    gofakeit.Password(true, true, true, true, true, 9),
+	}
+	customerDetails, err := db.CreateCustomer(&customer)
+	if err != nil {
+		t.Fatalf("failed to create customer")
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *domain.Customer
+		wantErr bool
+	}{
+		{
+			name: "happy case:",
+			args: args{
+				customer: &domain.Customer{
+					PhoneNumber: customerDetails.PhoneNumber,
+					FirstName:   "new name",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := db.UpdateCustomer(tt.args.customer)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("OrderService.UpdateCustomer() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got.PhoneNumber != customer.PhoneNumber {
+				t.Errorf("OrderService.UpdateCustomer() expected phone number to be: %v but got %v", customer.PhoneNumber, got.PhoneNumber)
+				return
+			}
+		})
+	}
+}

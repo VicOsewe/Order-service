@@ -30,18 +30,26 @@ func NewOrderService(repo repository.Repository, sms interfaces.SMS) *Service {
 	}
 }
 
+//CreateCustomer checks to see if a customer records exists and if not it creates a new record
+// of the customer details
 func (s *Service) CreateCustomer(customer *domain.Customer) (*domain.Customer, error) {
-
 	if customer == nil {
 		return nil, fmt.Errorf("customer fields required")
 	}
 
-	cust, err := s.Repository.CreateCustomer(customer)
+	customerDetails, err := s.Repository.GetCustomerByPhoneNumber(customer.PhoneNumber)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create customer :%v", err)
+		return nil, err
+	}
+	if customerDetails == nil {
+		cust, err := s.Repository.CreateCustomer(customer)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create customer :%v", err)
+		}
+		return cust, nil
 	}
 
-	return cust, nil
+	return customerDetails, nil
 }
 
 func (s *Service) CreateProduct(product *domain.Product) (*domain.Product, error) {
