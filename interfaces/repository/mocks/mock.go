@@ -30,6 +30,12 @@ func NewRepositoryMocks() *RepositoryMocks {
 		Email:       gofakeit.Email(),
 		Password:    gofakeit.Password(true, true, true, true, true, 9),
 	}
+	product := dao.Product{
+		ID:        uuid.New().String(),
+		Name:      gofakeit.BeerName(),
+		UnitPrice: gofakeit.Price(300.0, 400.0),
+		Inventory: 100,
+	}
 	return &RepositoryMocks{
 		MockCreateCustomer: func(customer *dao.Customer) (*dao.Customer, error) {
 			return &customerDetails, nil
@@ -44,13 +50,13 @@ func NewRepositoryMocks() *RepositoryMocks {
 			return &customerDetails, nil
 		},
 		MockGetProductByID: func(productID string) (*dao.Product, error) {
-			return nil, nil
+			return &product, nil
 		},
 		MockGetCustomerByPhoneNumber: func(phoneNumber string) (*dao.Customer, error) {
 			return &customerDetails, nil
 		},
 		MockGetProductByName: func(name string) (*dao.Product, error) {
-			return nil, nil
+			return &product, nil
 		},
 		MockGetAllCustomerOrdersByCustomerID: func(customerID string) (*[]dao.Order, error) {
 			return nil, nil

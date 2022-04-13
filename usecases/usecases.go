@@ -51,18 +51,26 @@ func (s *Service) CreateCustomer(customer *dao.Customer) (*dao.Customer, error) 
 	return customerDetails, nil
 }
 
+//CreateProduct checks to see if a product record exists and if not it creates a new record
 func (s *Service) CreateProduct(product *dao.Product) (*dao.Product, error) {
-
 	if product == nil {
 		return nil, fmt.Errorf("product fields required")
 	}
 
-	prod, err := s.Repository.CreateProduct(product)
+	productDetails, err := s.Repository.GetProductByName(product.Name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create product :%v", err)
+		return nil, fmt.Errorf("failed to create products")
 	}
 
-	return prod, nil
+	if productDetails.ID == "" {
+		prod, err := s.Repository.CreateProduct(product)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create product :%v", err)
+		}
+		return prod, nil
+	}
+
+	return productDetails, nil
 }
 
 func (s *Service) CreateOrder(order *dao.Order, orderProducts *[]dao.OrderProduct) (*string, error) {

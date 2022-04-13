@@ -34,7 +34,7 @@ type Product struct {
 	ID        string  `json:"id"`
 	Name      string  `json:"name"`
 	UnitPrice float64 `json:"unit_price"`
-	Inventory int
+	Inventory int     `json:"inventory"`
 }
 
 type OrderProduct struct {

@@ -12,7 +12,7 @@ import (
 
 type HandlersInterfaces interface {
 	CreateCustomer() http.HandlerFunc
-	CreateProduct(w http.ResponseWriter, r *http.Request)
+	CreateProduct() http.HandlerFunc
 	CreateOrder(w http.ResponseWriter, r *http.Request)
 	GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error)
 	GetProductByName(name string) (*dao.Product, error)
@@ -108,49 +108,52 @@ func (h *HandlersImplementation) CreateCustomer() http.HandlerFunc {
 
 }
 
-func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	product := dao.Product{}
-	err := UnmarshalJSONToStruct(w, r, &product)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to unmarshal to struct",
-			},
+func (h *HandlersImplementation) CreateProduct() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		product := dao.Product{}
+		err := UnmarshalJSONToStruct(w, r, &product)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to unmarshal to struct",
+				},
+			}
+			HandlerResponse(w, http.StatusInternalServerError, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusInternalServerError, response)
-		return
+		if product.Name == "" || product.UnitPrice == 0 {
+			response := dto.APIFailureResponse{
+				Error: "failed to validate product details",
+				APIResponse: dto.APIResponse{
 
-	}
-	if product.Name == "" || product.UnitPrice == 0 {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "invalid request data, ensure name and unit_price is provided",
-			},
+					Message: "invalid request data, ensure name, inventory and unit_price is provided",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
-	}
 
-	prod, err := h.Usecases.CreateProduct(&product)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to create product record",
-			},
+		prod, err := h.Usecases.CreateProduct(&product)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to create product record",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		response := dto.APIResponse{
+			Message: "product created successfully",
+			Body:    prod,
+		}
 
+		HandlerResponse(w, http.StatusAccepted, response)
 	}
-	response := dto.APIResponse{
-		Message: "product created successfully",
-		Body:    prod,
-	}
-
-	HandlerResponse(w, http.StatusAccepted, response)
 
 }
 
