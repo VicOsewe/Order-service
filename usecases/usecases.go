@@ -87,19 +87,16 @@ func (s *Service) CreateOrder(order *dao.Order, orderProducts *[]dao.OrderProduc
 	}
 
 	for _, orderProduct := range *orderProducts {
-		if orderProduct.ProductID == "" {
-			return nil, fmt.Errorf("ensure that a product(s) is provided")
-		}
 		if orderProduct.ProductQuantity == 0 {
 			return nil, fmt.Errorf("ensure that product quantity is more than one")
 		}
-		// ensure that the product exists in the database
-		product, err := s.Repository.GetProductByID(orderProduct.ProductID)
+		//fetch the product form the database
+		product, err := s.Repository.GetProductByName(orderProduct.Product.Name)
 		if err != nil {
 			return nil, fmt.Errorf("failed to retreive product with err of %v", err)
 		}
 		if product == nil {
-			return nil, fmt.Errorf("failed to find product with id %v", product.ID)
+			return nil, fmt.Errorf("product with name %v does not exist", product.Name)
 		}
 	}
 

@@ -8,16 +8,18 @@ import (
 	"github.com/VicOsewe/Order-service/domain/dao"
 	"github.com/VicOsewe/Order-service/domain/dto"
 	"github.com/VicOsewe/Order-service/usecases"
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type HandlersInterfaces interface {
 	CreateCustomer() http.HandlerFunc
 	CreateProduct() http.HandlerFunc
-	CreateOrder(w http.ResponseWriter, r *http.Request)
-	GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error)
-	GetProductByName(name string) (*dao.Product, error)
+	CreateOrder() http.HandlerFunc
+	GetCustomerByPhoneNumber() http.HandlerFunc
+	GetProductByName() http.HandlerFunc
 	GetAllCustomerOrdersByPhoneNumber(phoneNumber string) (*[]dao.Order, error)
-	GetAllProducts() (*[]dao.Product, error)
+	GetAllProducts() http.HandlerFunc
 }
 
 type HandlersImplementation struct {
@@ -157,154 +159,158 @@ func (h *HandlersImplementation) CreateProduct() http.HandlerFunc {
 
 }
 
-func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	order := dto.OrderInput{}
-	err := UnmarshalJSONToStruct(w, r, &order)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to unmarshal to struct",
-			},
+func (h *HandlersImplementation) CreateOrder() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		order := dto.OrderInput{}
+		err := UnmarshalJSONToStruct(w, r, &order)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to unmarshal to struct",
+				},
+			}
+			HandlerResponse(w, http.StatusInternalServerError, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusInternalServerError, response)
-		return
 
-	}
+		ord, err := h.Usecases.CreateOrder(&order.Order, &order.OrderProduct)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to create order record",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 
-	prod, err := h.Usecases.CreateOrder(&order.Order, &order.OrderProduct)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to create order record",
-			},
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		response := dto.APIResponse{
+			Message: "order created successfully",
+			Body:    ord,
+		}
 
+		HandlerResponse(w, http.StatusAccepted, response)
 	}
-	response := dto.APIResponse{
-		Message: "order created successfully",
-		Body:    prod,
-	}
-
-	HandlerResponse(w, http.StatusAccepted, response)
 
 }
 
-func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter, r *http.Request) {
-	customer := dao.Customer{}
-	err := UnmarshalJSONToStruct(w, r, &customer)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to unmarshal to struct",
-			},
+func (h *HandlersImplementation) GetCustomerByPhoneNumber() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		customer := dao.Customer{}
+		vars := mux.Vars(r)
+
+		customer.PhoneNumber = vars["phone_number"]
+		logrus.Print(customer.PhoneNumber)
+		if customer.PhoneNumber == "" {
+			response := dto.APIFailureResponse{
+				Error: "phone number is empty",
+				APIResponse: dto.APIResponse{
+					Message: "invalid request data, phone_number is provided",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 		}
-		HandlerResponse(w, http.StatusInternalServerError, response)
-		return
+		normalizedPhoneNumber, err := NormalizePhoneNumber(customer.PhoneNumber)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to normalize phone number",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 
-	}
-	if customer.PhoneNumber == "" {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "invalid request data, phone_number is provided",
-			},
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
-	}
 
-	prod, err := h.Usecases.GetCustomerByPhoneNumber(customer.PhoneNumber)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to fetch customer record",
-			},
+		prod, err := h.Usecases.GetCustomerByPhoneNumber(normalizedPhoneNumber)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to fetch customer record",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		response := dto.APIResponse{
+			Message: "customer retrieved successfully",
+			Body:    prod,
+		}
 
+		HandlerResponse(w, http.StatusAccepted, response)
 	}
-	response := dto.APIResponse{
-		Message: "customer retrieved successfully",
-		Body:    prod,
-	}
-
-	HandlerResponse(w, http.StatusAccepted, response)
 
 }
 
-func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http.Request) {
-	product := dao.Product{}
-	err := UnmarshalJSONToStruct(w, r, &product)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to unmarshal to struct",
-			},
+func (h *HandlersImplementation) GetProductByName() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		product := dao.Product{}
+		vars := mux.Vars(r)
+
+		product.Name = vars["name"]
+		logrus.Print(product.Name)
+		if product.Name == "" {
+			response := dto.APIFailureResponse{
+				Error: "product name is not provided",
+				APIResponse: dto.APIResponse{
+					Message: "invalid request data, name is provided",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 		}
-		HandlerResponse(w, http.StatusInternalServerError, response)
-		return
 
-	}
-	if product.Name == "" {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "invalid request data, name is provided",
-			},
+		prod, err := h.Usecases.GetProductByName(product.Name)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to fetch product record",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
-	}
-
-	prod, err := h.Usecases.GetProductByName(product.Name)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to fetch product record",
-			},
+		response := dto.APIResponse{
+			Message: "product retrieved successfully",
+			Body:    prod,
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
 
+		HandlerResponse(w, http.StatusAccepted, response)
 	}
-	response := dto.APIResponse{
-		Message: "product retrieved successfully",
-		Body:    prod,
-	}
-
-	HandlerResponse(w, http.StatusAccepted, response)
 
 }
 
-func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.Request) {
+func (h *HandlersImplementation) GetAllProducts() http.HandlerFunc {
 
-	prod, err := h.Usecases.GetAllProducts()
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				Message: "failed to fetch products record",
-			},
+	return func(w http.ResponseWriter, r *http.Request) {
+		prod, err := h.Usecases.GetAllProducts()
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to fetch products record",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		response := dto.APIResponse{
+			Message: "products retrieved successfully",
+			Body:    prod,
+		}
 
+		HandlerResponse(w, http.StatusAccepted, response)
 	}
-	response := dto.APIResponse{
-		Message: "products retrieved successfully",
-		Body:    prod,
-	}
-
-	HandlerResponse(w, http.StatusAccepted, response)
 
 }
 

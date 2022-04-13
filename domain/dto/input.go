@@ -8,16 +8,11 @@ type OrderInput struct {
 }
 
 type SMSResponse struct {
-	SMSMessageData SMSMessageData `json:"SMSMessageData"`
+	SMSMessageData struct {
+		Message string `xml:"Message"`
+	} `xml:"SMSMessageData"`
 }
+
 type SMSMessageData struct {
-	Message    string       `json:"Message"`
-	Recepients []Recepients `json:"Recipients"`
-}
-type Recepients struct {
-	StatusCode int    `json:"statusCode"`
-	Number     string `json:"number"`
-	Status     string `json:"status"`
-	Cost       string `json:"cost"`
-	MessageID  string `json:"messageId"`
+	Message string `json:"Message"`
 }
