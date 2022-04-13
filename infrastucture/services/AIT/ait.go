@@ -1,8 +1,8 @@
 package ait
 
 import (
-	"encoding/json"
-	"fmt"
+	"encoding/xml"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -42,15 +42,18 @@ func (s *ServiceAITImpl) SendSMS(message, phoneNumber string) error {
 	if err != nil {
 		return err
 	}
-	rawRespBytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return fmt.Errorf("unable to read wallet response: %w", err)
-	}
 
 	aitResponse := dto.SMSResponse{}
-	err = json.Unmarshal(rawRespBytes, &aitResponse)
+
+	defer response.Body.Close()
+	d, _ := ioutil.ReadAll(response.Body)
+	if response.StatusCode != 201 {
+		return errors.New(string(d))
+	}
+
+	err = xml.Unmarshal(d, &aitResponse)
 	if err != nil {
-		return fmt.Errorf("unable to unmarshal '%s' to JSON: %w", string(rawRespBytes), err)
+		return errors.New(err.Error())
 	}
 	return nil
 }

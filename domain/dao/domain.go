@@ -27,7 +27,7 @@ type Order struct {
 	ID           string         `json:"id"`
 	TotalAmount  float64        `json:"total_amount"`
 	CustomerID   string         `json:"customer_id"`
-	OrderProduct []OrderProduct `json:"order_product"`
+	OrderProduct []OrderProduct `json:"-"`
 }
 
 type Product struct {
