@@ -11,7 +11,7 @@ import (
 )
 
 type HandlersInterfaces interface {
-	CreateCustomer(w http.ResponseWriter, r *http.Request)
+	CreateCustomer() http.HandlerFunc
 	CreateProduct(w http.ResponseWriter, r *http.Request)
 	CreateOrder(w http.ResponseWriter, r *http.Request)
 	GetCustomerByPhoneNumber(phoneNumber string) (*dao.Customer, error)
@@ -46,68 +46,65 @@ func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 }
 
 //CreateCustomer creates a record of customer details
-func (h *HandlersImplementation) CreateCustomer(w http.ResponseWriter, r *http.Request) {
-	customer := dao.Customer{}
-	err := UnmarshalJSONToStruct(w, r, &customer)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "failed to unmarshal to struct",
-			},
+func (h *HandlersImplementation) CreateCustomer() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		customer := dao.Customer{}
+		err := UnmarshalJSONToStruct(w, r, &customer)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to unmarshal to struct",
+				},
+			}
+			HandlerResponse(w, http.StatusInternalServerError, response)
+			return
+
 		}
-		HandlerResponse(w, http.StatusInternalServerError, response)
-		return
+		err = ValidateCustomerInfo(customer)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to validate customer info",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 
-	}
-	err = ValidateCustomerInfo(customer)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to validate customer info",
-			},
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		normalizedPhoneNumber, err := NormalizePhoneNumber(customer.PhoneNumber)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to normalize phone number",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 
-	}
-	normalizedPhoneNumber, err := NormalizePhoneNumber(customer.PhoneNumber)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to normalize phone number",
-			},
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		customer.PhoneNumber = normalizedPhoneNumber
+		cust, err := h.Usecases.CreateCustomer(&customer)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to create customer record",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
 
-	}
-	customer.PhoneNumber = normalizedPhoneNumber
-	cust, err := h.Usecases.CreateCustomer(&customer)
-	if err != nil {
-		response := dto.APIFailureResponse{
-			Error: err.Error(),
-			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to create customer record",
-			},
 		}
-		HandlerResponse(w, http.StatusBadRequest, response)
-		return
+		response := dto.APIResponse{
+			Message: "customer created successfully",
+			Body:    cust,
+		}
 
+		HandlerResponse(w, http.StatusCreated, response)
 	}
-	response := dto.APIResponse{
-		Message:    "customer created successfully",
-		Body:       cust,
-		StatusCode: http.StatusCreated,
-	}
-
-	HandlerResponse(w, http.StatusAccepted, response)
 
 }
 
@@ -118,8 +115,7 @@ func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Re
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "failed to unmarshal to struct",
+				Message: "failed to unmarshal to struct",
 			},
 		}
 		HandlerResponse(w, http.StatusInternalServerError, response)
@@ -130,8 +126,7 @@ func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Re
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "invalid request data, ensure name and unit_price is provided",
+				Message: "invalid request data, ensure name and unit_price is provided",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -143,8 +138,7 @@ func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Re
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to create product record",
+				Message: "failed to create product record",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -152,9 +146,8 @@ func (h *HandlersImplementation) CreateProduct(w http.ResponseWriter, r *http.Re
 
 	}
 	response := dto.APIResponse{
-		Message:    "product created successfully",
-		Body:       prod,
-		StatusCode: http.StatusCreated,
+		Message: "product created successfully",
+		Body:    prod,
 	}
 
 	HandlerResponse(w, http.StatusAccepted, response)
@@ -168,8 +161,7 @@ func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Requ
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "failed to unmarshal to struct",
+				Message: "failed to unmarshal to struct",
 			},
 		}
 		HandlerResponse(w, http.StatusInternalServerError, response)
@@ -182,8 +174,7 @@ func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Requ
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to create order record",
+				Message: "failed to create order record",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -191,9 +182,8 @@ func (h *HandlersImplementation) CreateOrder(w http.ResponseWriter, r *http.Requ
 
 	}
 	response := dto.APIResponse{
-		Message:    "order created successfully",
-		Body:       prod,
-		StatusCode: http.StatusCreated,
+		Message: "order created successfully",
+		Body:    prod,
 	}
 
 	HandlerResponse(w, http.StatusAccepted, response)
@@ -207,8 +197,7 @@ func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter,
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "failed to unmarshal to struct",
+				Message: "failed to unmarshal to struct",
 			},
 		}
 		HandlerResponse(w, http.StatusInternalServerError, response)
@@ -219,8 +208,7 @@ func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter,
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "invalid request data, phone_number is provided",
+				Message: "invalid request data, phone_number is provided",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -232,8 +220,7 @@ func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter,
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to fetch customer record",
+				Message: "failed to fetch customer record",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -241,9 +228,8 @@ func (h *HandlersImplementation) GetCustomerByPhoneNumber(w http.ResponseWriter,
 
 	}
 	response := dto.APIResponse{
-		Message:    "customer retrieved successfully",
-		Body:       prod,
-		StatusCode: http.StatusCreated,
+		Message: "customer retrieved successfully",
+		Body:    prod,
 	}
 
 	HandlerResponse(w, http.StatusAccepted, response)
@@ -257,8 +243,7 @@ func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "failed to unmarshal to struct",
+				Message: "failed to unmarshal to struct",
 			},
 		}
 		HandlerResponse(w, http.StatusInternalServerError, response)
@@ -269,8 +254,7 @@ func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "invalid request data, name is provided",
+				Message: "invalid request data, name is provided",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -282,8 +266,7 @@ func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to fetch product record",
+				Message: "failed to fetch product record",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -291,9 +274,8 @@ func (h *HandlersImplementation) GetProductByName(w http.ResponseWriter, r *http
 
 	}
 	response := dto.APIResponse{
-		Message:    "product retrieved successfully",
-		Body:       prod,
-		StatusCode: http.StatusCreated,
+		Message: "product retrieved successfully",
+		Body:    prod,
 	}
 
 	HandlerResponse(w, http.StatusAccepted, response)
@@ -307,8 +289,7 @@ func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.R
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to fetch products record",
+				Message: "failed to fetch products record",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -316,9 +297,8 @@ func (h *HandlersImplementation) GetAllProducts(w http.ResponseWriter, r *http.R
 
 	}
 	response := dto.APIResponse{
-		Message:    "products retrieved successfully",
-		Body:       prod,
-		StatusCode: http.StatusCreated,
+		Message: "products retrieved successfully",
+		Body:    prod,
 	}
 
 	HandlerResponse(w, http.StatusAccepted, response)
@@ -333,8 +313,7 @@ func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.Respon
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusInternalServerError,
-				Message:    "failed to unmarshal to struct",
+				Message: "failed to unmarshal to struct",
 			},
 		}
 		HandlerResponse(w, http.StatusInternalServerError, response)
@@ -345,8 +324,7 @@ func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.Respon
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "invalid request data, phone_number is provided",
+				Message: "invalid request data, phone_number is provided",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -358,8 +336,7 @@ func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.Respon
 		response := dto.APIFailureResponse{
 			Error: err.Error(),
 			APIResponse: dto.APIResponse{
-				StatusCode: http.StatusBadRequest,
-				Message:    "failed to fetch order record",
+				Message: "failed to fetch order record",
 			},
 		}
 		HandlerResponse(w, http.StatusBadRequest, response)
@@ -367,9 +344,8 @@ func (h *HandlersImplementation) GetAllCustomerOrdersByPhoneNumber(w http.Respon
 
 	}
 	response := dto.APIResponse{
-		Message:    "orders retrieved successfully",
-		Body:       prod,
-		StatusCode: http.StatusCreated,
+		Message: "orders retrieved successfully",
+		Body:    prod,
 	}
 
 	HandlerResponse(w, http.StatusAccepted, response)

@@ -41,13 +41,13 @@ func NewRepositoryMocks() *RepositoryMocks {
 			return nil, nil
 		},
 		MockGetCustomerByID: func(customerID string) (*dao.Customer, error) {
-			return nil, nil
+			return &customerDetails, nil
 		},
 		MockGetProductByID: func(productID string) (*dao.Product, error) {
 			return nil, nil
 		},
 		MockGetCustomerByPhoneNumber: func(phoneNumber string) (*dao.Customer, error) {
-			return nil, nil
+			return &customerDetails, nil
 		},
 		MockGetProductByName: func(name string) (*dao.Product, error) {
 			return nil, nil
