@@ -1,9 +1,8 @@
 package dto
 
 type APIResponse struct {
-	Message    string `json:"message"`
-	StatusCode int    `json:"status_code"`
-	Body       interface{}
+	Message string `json:"message"`
+	Body    interface{}
 }
 
 type APIFailureResponse struct {
