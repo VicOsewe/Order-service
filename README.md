@@ -6,6 +6,7 @@ Order service implements functions of registering users, managing products and c
 
 
 ## Features
+ 1. Create customer
 
 ## Endpoints
 

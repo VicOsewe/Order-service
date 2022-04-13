@@ -89,6 +89,78 @@ func TestService_CreateCustomer(t *testing.T) {
 			}
 			if got == nil && tt.wantErr == false {
 				t.Errorf("Service.CreateCustomer() failed to create customer")
+				return
+			}
+		})
+	}
+}
+
+func TestService_CreateProduct(t *testing.T) {
+
+	type args struct {
+		product *dao.Product
+	}
+	product := dao.Product{
+		ID:        uuid.New().String(),
+		Name:      gofakeit.CarModel(),
+		UnitPrice: 300.0,
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *dao.Product
+		wantErr bool
+	}{
+		{
+			name: "happy case:product record created",
+			args: args{
+				product: &product,
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad case:get product failure",
+			args: args{
+				product: &product,
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad case:create product in database failure",
+			args: args{
+				product: &product,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := mocks.NewRepositoryMocks()
+			sms := smsMocks.NewSMSMocks()
+			s := NewOrderService(repo, sms)
+			if tt.name == "sad case:get product failure" {
+				repo.MockGetProductByName = func(name string) (*dao.Product, error) {
+					return nil, fmt.Errorf("failed to get product")
+				}
+			}
+			if tt.name == "sad case:create product in database failure" {
+				repo.MockGetProductByName = func(name string) (*dao.Product, error) {
+					product := dao.Product{}
+					return &product, nil
+				}
+				repo.MockCreateProduct = func(product *dao.Product) (*dao.Product, error) {
+					return nil, fmt.Errorf("failed to create product")
+				}
+			}
+			got, err := s.CreateProduct(tt.args.product)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.CreateProduct() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got == nil && tt.wantErr == false {
+				t.Errorf("Service.CreateProduct() failed to create customer")
+				return
 			}
 		})
 	}
