@@ -36,3 +36,5 @@ func GenerateOTP() (string, error) {
 	}
 	return code, nil
 }
+
+// func

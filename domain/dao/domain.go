@@ -13,12 +13,10 @@ type Customer struct {
 	ID          string  `json:"id" gorm:"primaryKey;unique"`
 	FirstName   string  `json:"first_name"`
 	LastName    string  `json:"last_name"`
-	Username    string  `json:"user_name"`
 	DateOfBirth string  `json:"date_of_birth"`
 	Gender      string  `json:"gender"`
 	PhoneNumber string  `json:"phone_number"`
 	Email       string  `json:"email"`
-	Address     string  `json:"address"`
 	Password    string  `json:"password"`
 	Order       []Order `json:"-" gorm:"foreignKey:CustomerID"`
 }
