@@ -26,6 +26,7 @@ func SetUpRouter() {
 	handler := rest.NewHandler(usecases)
 	router.Use(handler.BasicAuth())
 
+	router.Path("/verify").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.VerifyCustomerPhoneNumber())
 	router.Path("/customers").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateCustomer())
 	router.Path("/products").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateProduct())
 	router.Path("/orders").Methods(http.MethodOptions, http.MethodPost).HandlerFunc(handler.CreateOrder())

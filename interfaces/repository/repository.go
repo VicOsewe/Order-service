@@ -13,4 +13,5 @@ type Repository interface {
 	GetAllCustomerOrdersByCustomerID(customerID string) (*[]dao.Order, error)
 	GetAllProducts() (*[]dao.Product, error)
 	UpdateCustomer(customer *dao.Customer) (*dao.Customer, error)
+	SaveOTP(otp dao.OTP) error
 }

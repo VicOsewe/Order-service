@@ -44,9 +44,17 @@ func InitializeDatabase() *gorm.DB {
 	}
 	log.Print("connected to the database successfully")
 
-	db.AutoMigrate(&dao.Customer{}, &dao.Order{}, &dao.Product{}, &dao.OrderProduct{})
+	db.AutoMigrate(&dao.Customer{}, &dao.Order{}, &dao.Product{}, &dao.OrderProduct{}, &dao.OTP{})
 	return db
 
+}
+
+//SaveOTP persists the otp record
+func (db *OrderService) SaveOTP(otp dao.OTP) error {
+	if err := db.DB.Create(otp).Error; err != nil {
+		return fmt.Errorf("error saving otp record: %v", err)
+	}
+	return nil
 }
 
 //CreateCustomer creates a record of a customer in the database

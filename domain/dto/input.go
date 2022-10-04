@@ -16,3 +16,7 @@ type SMSResponse struct {
 type SMSMessageData struct {
 	Message string `json:"Message"`
 }
+
+type OtpInput struct {
+	PhoneNumber string `json:"phone_number"`
+}
