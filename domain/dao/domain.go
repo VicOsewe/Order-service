@@ -1,6 +1,12 @@
 package dao
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
 
 //Customer ...
 type Customer struct {
@@ -19,6 +25,13 @@ type Customer struct {
 
 func (customer *Customer) BeforeCreate(tx *gorm.DB) error {
 	// encrypt pin
+	// Salt and hash the password using the bcrypt algorithm
+	// The second argument is the cost of hashing, which we arbitrarily set as 8 (this value can be more or less, depending on the computing power you wish to utilize)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(customer.Password), 8)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt password: %v", err)
+	}
+	customer.Password = string(hashedPassword)
 	return nil
 }
 
@@ -43,4 +56,14 @@ type OrderProduct struct {
 	ProductID       string  `json:"product_id"`
 	ProductQuantity int     `json:"product_quantity"`
 	Product         Product `json:"product" `
+}
+
+// OTP is used to persist and verify authorization codes
+// (single use 'One Time PIN's)
+type OTP struct {
+	MSISDN            string    `json:"msisdn,omitempty" `
+	Message           string    `json:"message,omitempty" `
+	AuthorizationCode string    `json:"authorizationCode"`
+	Timestamp         time.Time `json:"timestamp"`
+	IsValid           bool      `json:"isValid"`
 }

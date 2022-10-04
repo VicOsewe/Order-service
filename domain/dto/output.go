@@ -11,3 +11,8 @@ type APIFailureResponse struct {
 	//to change to enum
 	ErrorType string `json:"error_type"`
 }
+
+// OtpResponse returns an otp
+type OtpResponse struct {
+	OTP string `json:"otp"`
+}

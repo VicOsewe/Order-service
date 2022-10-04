@@ -2,13 +2,18 @@ package usecases
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/VicOsewe/Order-service/application"
 	"github.com/VicOsewe/Order-service/domain/dao"
+	"github.com/VicOsewe/Order-service/domain/dto"
+
 	"github.com/VicOsewe/Order-service/interfaces/repository"
 	interfaces "github.com/VicOsewe/Order-service/interfaces/services"
 )
 
 type OrderService interface {
+	VerifyPhoneNumber(phoneNumber string) (*dto.OtpResponse, error)
 	CreateCustomer(customer *dao.Customer) (*dao.Customer, error)
 	CreateProduct(product *dao.Product) (*dao.Product, error)
 	CreateOrder(order *dao.Order, orderProducts *[]dao.OrderProduct) (*string, error)
@@ -28,6 +33,61 @@ func NewOrderService(repo repository.Repository, sms interfaces.SMS) *Service {
 		Repository: repo,
 		SMS:        sms,
 	}
+}
+
+// VerifyPhoneNumber checks validity of a phone number by sending an OTP to it
+func (s *Service) VerifyPhoneNumber(phoneNumber string) (*dto.OtpResponse, error) {
+	if phoneNumber == "" {
+		return nil, fmt.Errorf("phone number field is required")
+	}
+
+	customerDetails, err := s.Repository.GetCustomerByPhoneNumber(phoneNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	if customerDetails.PhoneNumber != "" {
+		return nil, fmt.Errorf("the phone number already exists")
+	}
+
+	code, err := s.GenerateAndSendOTP(phoneNumber)
+	if err != nil {
+		return nil, err
+	}
+	otpResponse := &dto.OtpResponse{
+		OTP: code,
+	}
+
+	return otpResponse, nil
+}
+
+//GenerateAndSendOTP generates an OTP, persists it in the database and sends it to the
+//supplied phone number as a text message
+func (s *Service) GenerateAndSendOTP(phoneNumber string) (string, error) {
+	code, err := application.GenerateOTP()
+	if err != nil {
+		return "", err
+	}
+
+	message := fmt.Sprintf(" Your One Time Password is %s", code)
+	otp := dao.OTP{
+		MSISDN:            phoneNumber,
+		Message:           message,
+		AuthorizationCode: code,
+		Timestamp:         time.Now(),
+		IsValid:           true,
+	}
+
+	err = s.Repository.SaveOTP(otp)
+	if err != nil {
+		return "", err
+	}
+	err = s.SMS.SendSMS(message, phoneNumber)
+	if err != nil {
+		return "", err
+	}
+
+	return code, nil
 }
 
 //CreateCustomer checks to see if a customer records exists and if not it creates a new record

@@ -13,6 +13,7 @@ import (
 )
 
 type HandlersInterfaces interface {
+	VerifyCustomerPhoneNumber() http.HandlerFunc
 	CreateCustomer() http.HandlerFunc
 	CreateProduct() http.HandlerFunc
 	CreateOrder() http.HandlerFunc
@@ -45,6 +46,53 @@ func NewHandler(usecases usecases.OrderService) HandlersImplementation {
 		log.Fatal("basic auth password must be provided")
 	}
 	return app
+}
+
+func (h *HandlersImplementation) VerifyCustomerPhoneNumber() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		otpPayload := dto.OtpInput{}
+		err := UnmarshalJSONToStruct(w, r, &otpPayload)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to unmarshal to struct",
+				},
+			}
+			HandlerResponse(w, http.StatusInternalServerError, response)
+			return
+		}
+		normalizedPhoneNumber, err := NormalizePhoneNumber(otpPayload.PhoneNumber)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to normalize phone number",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
+
+		}
+		otp, err := h.Usecases.VerifyPhoneNumber(normalizedPhoneNumber)
+		if err != nil {
+			response := dto.APIFailureResponse{
+				Error: err.Error(),
+				APIResponse: dto.APIResponse{
+					Message: "failed to verify phone number",
+				},
+			}
+			HandlerResponse(w, http.StatusBadRequest, response)
+			return
+		}
+
+		response := dto.APIResponse{
+			Message: "otp sent successfully",
+			Body:    otp,
+		}
+
+		HandlerResponse(w, http.StatusCreated, response)
+	}
 }
 
 //CreateCustomer creates a record of customer details
