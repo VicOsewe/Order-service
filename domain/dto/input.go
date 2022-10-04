@@ -20,3 +20,14 @@ type SMSMessageData struct {
 type OtpInput struct {
 	PhoneNumber string `json:"phone_number"`
 }
+
+type SignUpInput struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	PhoneNumber string `json:"phone_number"`
+	Password    string `json:"password"`
+	OTP         string `json:"otp"`
+	DateOfBirth string `json:"date_of_birth"`
+	Gender      string `json:"gender"`
+	Email       string `json:"email"`
+}
